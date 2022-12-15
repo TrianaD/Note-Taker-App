@@ -1,19 +1,35 @@
-var db = require("../db/db.json"); 
-const fs = require ('fs');
+const fs =require('fs');
+const path = require('path');
 
-module.exports = function (app) {
-    app.get("/api/notes", function(req, res) {
-        res.json(db);
-    });
+const notes = require('express').Router();
+const uuid = require('../helpers/uuid');
 
-    app.post("/api/notes", function(req,res) {
-        db.push(req.body);
-        dbforEach((obj, i) => {
-            obj.id = i=1;
 
-        });
-        fs.writeFile("/db/db.json", JSON.stringify(db), function () {
-            res.json(db);
-        });
-    });
-};
+
+// GET Route for retrieving all the notes
+notes.get('/', (req, res) => {
+    readFromFile('./db/db.json').then((data) => res.json(JSON.parse(data)));
+  });
+  
+  // POST Route for a new note
+  notes.post('/', (req, res) => {
+    console.log(req.body);
+  
+    const { username, topic, notes } = req.body;
+  
+    if (req.body) {
+      const newNote = {
+        username,
+        notes,
+        topic,
+        note_id: uuid(),
+      };
+  
+      readAndAppend(newNote, './db/db.json');
+      res.json(`Note added successfully 🚀`);
+    } else {
+      res.error('Error in adding note');
+    }
+  });
+  
+  module.exports = notes;
